@@ -1,0 +1,20 @@
+main>.container {
+    width: 100%;
+    height: 100vh;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url('/images/Olin-Level6.gif')
+}
+
+.side-nav>li>.collapsible>li>.collapsible-header {
+    padding-left: 32px;
+}
+
+.side-nav>li>.collapsible>li>.collapsible-body>div>a {
+    padding-left: 42px;
+}
+
+.toolbox {
+    padding-left: 32px;
+}
