@@ -12,14 +12,67 @@ $(document).ready(function() {
             $(this).addClass('light-blue');
         });
     });
+
+    $('#nav-undo').click(function() {
+        if (objects.length === 0) {
+            return;
+        }
+        var obj = objects.pop();
+        $('#' + obj.id).remove();
+        objects_redo.push(obj);
+    });
+
+    $('#nav-redo').click(function() {
+        if (objects_redo.length === 0) {
+            return;
+        }
+        var obj = objects_redo.pop();
+        switch (obj.type) {
+            case 'rect':
+                var rect = canvas.append('rect');
+                rect.attrs({
+                    'x': obj.data[0],
+                    'y': obj.data[1],
+                    'width': obj.data[2],
+                    'height': obj.data[3],
+                    'stroke-width': '1',
+                    'stroke': '#F66',
+                    'fill': 'rgba(38, 50, 56, 0.5)',
+                    'object_id': objects.length,
+                    'id': objects.length
+                });
+                // rect redrawn and restored
+                objects.push(obj);
+                break;
+            case 'polygon':
+                var polygon = canvas.append('polygon');
+                polygon.attrs({
+                    'points': obj.data.map(function(p) {
+                        return p[0] + ',' + p[1];
+                    }).join(' '),
+                    'stroke-width': '1',
+                    'stroke': '#F66',
+                    'fill': 'rgba(38, 50, 56, 0.5)',
+                    'object_id': objects.length,
+                    'id': objects.length
+                });
+                // rect redrawn and restored
+                objects.push(obj);
+                break;
+            default:
+
+        }
+    });
 });
 
+var canvas;
 var modebit = 0; // 0: pointer, 1: rect, 2: poly, 3: mark, 4: text
 var objects = [];
+var objects_redo = [];
 
 function initCanvas(w, h) {
     // var x = d3.scaleLinear().domain([0, d3.max(data)]).range([0, width]);
-    var canvas = d3.select('#canvas').attr('width', w).attr('height', h);
+    canvas = d3.select('#canvas').attr('width', w).attr('height', h);
     var gridLine;
     var gridNum = [
         Math.floor(w / 50),
@@ -70,8 +123,13 @@ function initCanvas(w, h) {
                     active_rect.classed('active', false);
                     active_rect.attr('width', rect_w).attr('height', rect_h);
                     active_rect.attrs({'stroke': '#F66', 'fill': 'rgba(38, 50, 56, 0.5)'});
+                    // rect created and stored
+                    objects_redo = [];
+                    active_rect.attr('object_id', objects.length);
+                    active_rect.attr('id', objects.length);
                     objects.push({
                         type: 'rect',
+                        id: objects.length,
                         data: [
                             parseInt(active_rect.attr('x')),
                             parseInt(active_rect.attr('y')),
@@ -137,8 +195,13 @@ function initCanvas(w, h) {
                     active_polygon.classed('active', false);
                     active_polygon.attr('points', active_polygon.attr('points') + ' ' + coords.join(','));
                     active_polygon.attrs({'stroke': '#F66', 'fill': 'rgba(38, 50, 56, 0.5)'});
+                    // polygon created and stored
+                    objects_redo = [];
+                    active_polygon.attr('object_id', objects.length);
+                    active_polygon.attr('id', objects.length);
                     objects.push({
                         type: 'polygon',
+                        id: objects.length,
                         data: active_polygon.attr('points').split(' ').map(function(p) {
                             return [
                                 parseInt(p.split(',')[0]),
