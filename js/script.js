@@ -9,6 +9,11 @@ $(document).ready(function() {
                 $('svg .selected').removeClass('selected');
             }
             modebit = index;
+            if (modebit === 1 || modebit === 2) {
+                canvas.style('cursor', 'crosshair');
+            } else {
+                canvas.style('cursor', 'default');
+            }
             $('.tool-options > .row').hide();
             $('.toolbox a.btn-flat').removeClass('light-blue');
             $('.tool-options > .row:nth-child(' + index + ')').show();
@@ -277,6 +282,7 @@ function confirmNewShape(shape) {
 
     }
     modebit = 0;
+    canvas.style('cursor', 'default');
 }
 
 function selectRect(id) {
