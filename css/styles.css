@@ -33,6 +33,10 @@ svg .selected {
     stroke-width: 3px;
 }
 
+svg g.hidden {
+    visibility: hidden;
+}
+
 main {
     padding-left: 300px;
 }
