@@ -74,21 +74,100 @@
       <li>
         <div class="toolbox">
           <div class="row">
-            <div class="col s3"><i class="material-icons">navigation</i></div>
-            <div class="col s3"><i class="material-icons">crop_landscape</i></div>
-            <div class="col s3"><i class="material-icons">label_outline</i></div>
-            <div class="col s3"><i class="material-icons">text_fields</i></div>
+            <a class="btn-flat col s3 light-blue">
+              <i class="material-icons">navigation</i>
+            </a>
           </div>
           <div class="row">
-            <div class="col s3"><i class="material-icons">flag</i></div>
-            <div class="col s3"><i class="material-icons">palette</i></div>
-            <div class="col s3"><i class="material-icons">format_color_fill</i></div>
+            <a class="btn-flat col s3"><i class="material-icons">crop_landscape</i></a>
+            <a class="btn-flat col s3"><i class="material-icons">label_outline</i></a>
+            <a class="btn-flat col s3"><i class="material-icons">flag</i></a>
+            <a class="btn-flat col s3"><i class="material-icons">text_fields</i></a>
+          </div>
+        </div>
+      </li>
+      <li>
+        <a class="subheader">Tool Options</a>
+      </li>
+      <li>
+        <div class="tool-options">
+          <div class="row crect">
+            <div class="input-field col s3">
+              <input id="crect-x" type="text">
+              <label for="crect-x">x</label>
+            </div>
+            <div class="input-field col s3">
+              <input id="crect-y" type="text">
+              <label for="crect-y">y</label>
+            </div>
+            <div class="input-field col s3">
+              <input id="crect-width" type="text">
+              <label for="crect-width">width</label>
+            </div>
+            <div class="input-field col s3">
+              <input id="crect-height" type="text">
+              <label for="crect-height">height</label>
+            </div>
+          </div>
+          <div class="row cpolygon">
+            <div class="input-field col s12">
+              <input id="cpolygon-points" type="text">
+              <label for="cpolygon-points">points</label>
+            </div>
+          </div>
+          <div class="row cmark">
+            <div class="input-field col s3">
+              <input id="cmark-rows" type="text">
+              <label for="cmark-rows">rows</label>
+            </div>
+            <div class="input-field col s3">
+              <input id="cmark-rotation" type="text">
+              <label for="cmark-rotation">rotation</label>
+            </div>
+            <div class="input-field col s6">
+              <input id="cmark-oversize" type="text">
+              <label for="cmark-oversize">oversize</label>
+            </div>
+            <div class="input-field col s6">
+              <input id="cmark-startClass" type="text">
+              <label for="cmark-startClass">startClass</label>
+            </div>
+            <div class="input-field col s6">
+              <input id="cmark-startSubclass" type="text">
+              <label for="cmark-startSubclass">startSubclass</label>
+            </div>
+            <div class="input-field col s6">
+              <input id="cmark-endClass" type="text">
+              <label for="cmark-endClass">endClass</label>
+            </div>
+            <div class="input-field col s6">
+              <input id="cmark-endSubclass" type="text">
+              <label for="cmark-endSubclass">endSubclass</label>
+            </div>
+          </div>
+          <div class="row ctext">
+            <div class="input-field col s3">
+              <input id="ctext-x" type="text">
+              <label for="ctext-x">x</label>
+            </div>
+            <div class="input-field col s3">
+              <input id="ctext-y" type="text">
+              <label for="ctext-y">y</label>
+            </div>
+            <div class="input-field col s6">
+              <input id="ctext-font-size" type="text">
+              <label for="ctext-font-size">font-size</label>
+            </div>
+            <div class="input-field col s12">
+              <input id="ctext-text" type="text">
+              <label for="ctext-text">Text</label>
+            </div>
           </div>
         </div>
       </li>
     </ul>
   </header>
-  <main style="padding-left: 300px">
+  <main>
     <ul id="dropdown2" class="dropdown-content">
       <li><a href="#!">50%</a></li>
       <li><a href="#!">100%</a></li>
@@ -130,10 +209,12 @@
     </nav>
     <div class="container" id="workspace">
       <!-- Workspace -->
-
+      <svg id="canvas"></svg>
     </div>
   </main>
 
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
   <script src="js/jquery-3.2.1.min.js"></script>
   <script src="js/materialize.min.js"></script>
   <script src="js/script.js"></script>

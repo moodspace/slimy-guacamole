@@ -15,6 +15,26 @@ main>.container {
     padding-left: 42px;
 }
 
-.toolbox {
-    padding-left: 32px;
+.toolbox *, .tool-options * {
+    line-height: 1.5;
+}
+
+.toolbox a.btn-flat {
+    line-height: 36px;
+    text-align: center;
+}
+
+.toolbox, .tool-options {
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+main {
+    padding-left: 300px;
+}
+
+@media only screen and (max-width: 992px) {
+    main {
+        padding-left: 0;
+    }
 }
