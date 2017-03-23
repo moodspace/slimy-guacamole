@@ -32,10 +32,7 @@
               Libraries<i class="material-icons right">add</i>
             </div>
             <div class="collapsible-body">
-              <div class="collection">
-                <a href="#!" class="collection-item">Uris</a>
-                <a href="#!" class="collection-item active">Olin</a>
-                <a href="#!" class="collection-item">Law</a>
+              <div class="collection" id="library-collection">
               </div>
             </div>
           </li>
@@ -51,15 +48,7 @@
               Floors<i class="material-icons right">add</i>
             </div>
             <div class="collapsible-body">
-              <div class="collection">
-                <a href="#!" class="collection-item">7</a>
-                <a href="#!" class="collection-item active">6</a>
-                <a href="#!" class="collection-item">5</a>
-                <a href="#!" class="collection-item">4</a>
-                <a href="#!" class="collection-item">3</a>
-                <a href="#!" class="collection-item">2</a>
-                <a href="#!" class="collection-item">1</a>
-                <a href="#!" class="collection-item">B1</a>
+              <div class="collection" id="floor-collection">
               </div>
             </div>
           </li>
@@ -124,26 +113,6 @@
               <input id="cmark-rotation" type="text">
               <label for="cmark-rotation">rotation</label>
             </div>
-            <div class="input-field col s6">
-              <input id="cmark-oversize" type="text">
-              <label for="cmark-oversize">oversize</label>
-            </div>
-            <div class="input-field col s6">
-              <input id="cmark-startClass" type="text">
-              <label for="cmark-startClass">startClass</label>
-            </div>
-            <div class="input-field col s6">
-              <input id="cmark-startSubclass" type="text">
-              <label for="cmark-startSubclass">startSubclass</label>
-            </div>
-            <div class="input-field col s6">
-              <input id="cmark-endClass" type="text">
-              <label for="cmark-endClass">endClass</label>
-            </div>
-            <div class="input-field col s6">
-              <input id="cmark-endSubclass" type="text">
-              <label for="cmark-endSubclass">endSubclass</label>
-            </div>
           </div>
           <div class="row ctext">
             <div class="input-field col s3">
@@ -161,6 +130,28 @@
             <div class="input-field col s12">
               <input id="ctext-text" type="text">
               <label for="ctext-text">Text</label>
+            </div>
+          </div>
+          <div class="row cstack">
+            <div class="input-field col s6">
+              <input id="cstack-oversize" type="text">
+              <label for="cstack-oversize">oversize</label>
+            </div>
+            <div class="input-field col s6">
+              <input id="cstack-startClass" type="text">
+              <label for="cstack-startClass">startClass</label>
+            </div>
+            <div class="input-field col s6">
+              <input id="cstack-startSubclass" type="text">
+              <label for="cstack-startSubclass">startSubclass</label>
+            </div>
+            <div class="input-field col s6">
+              <input id="cstack-endClass" type="text">
+              <label for="cstack-endClass">endClass</label>
+            </div>
+            <div class="input-field col s6">
+              <input id="cstack-endSubclass" type="text">
+              <label for="cstack-endSubclass">endSubclass</label>
             </div>
           </div>
         </div>
@@ -193,7 +184,7 @@
             <a class="switch" style="height: 64px">
               <label style="color: #fff">
                 <i class="material-icons" style="display: inline-block;">layers</i>
-                <input type="checkbox">
+                <input id="viewmode-toggle" type="checkbox" checked>
                 <span class="lever" style="top: -8px;"></span>
                 <i class="material-icons" style="display: inline-block;">theaters</i>
               </label>
@@ -215,6 +206,7 @@
 
   <script src="https://d3js.org/d3.v4.min.js"></script>
   <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
+  <script src="https://d3js.org/d3-polygon.v1.min.js"></script>
   <script src="js/jquery-3.2.1.min.js"></script>
   <script src="js/materialize.min.js"></script>
   <script src="js/script.js"></script>
