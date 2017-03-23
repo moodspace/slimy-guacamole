@@ -5,6 +5,9 @@ $(document).ready(function() {
     initCanvas($('#workspace').width(), $('#workspace').height());
     $('.toolbox a.btn-flat').each(function(index) {
         $(this).click(function() {
+            if (modebit !== index) {
+                $('svg .selected').removeClass('selected');
+            }
             modebit = index;
             $('.tool-options > .row').hide();
             $('.toolbox a.btn-flat').removeClass('light-blue');
@@ -12,14 +15,107 @@ $(document).ready(function() {
             $(this).addClass('light-blue');
         });
     });
+
+    $('#nav-undo').click(function() {
+        if (objects.length === 0) {
+            return;
+        }
+        var obj = objects.pop();
+        $('#' + obj.id).remove();
+        objects_redo.push(obj);
+    });
+
+    $('#nav-redo').click(function() {
+        if (objects_redo.length === 0) {
+            return;
+        }
+        var obj = objects_redo.pop();
+        switch (obj.type) {
+            case 'rect':
+                var rect = canvas.append('rect');
+                rect.attrs({
+                    'x': obj.data[0],
+                    'y': obj.data[1],
+                    'width': obj.data[2],
+                    'height': obj.data[3],
+                    'stroke-width': '1',
+                    'stroke': '#F66',
+                    'fill': 'rgba(38, 50, 56, 0.5)',
+                    'object_id': objects.length,
+                    'id': 'canvas-e' + objects.length
+                });
+                // rect redrawn and restored
+                objects.push(obj);
+                break;
+            case 'polygon':
+                var polygon = canvas.append('polygon');
+                polygon.attrs({
+                    'points': obj.data.map(function(p) {
+                        return p[0] + ',' + p[1];
+                    }).join(' '),
+                    'stroke-width': '1',
+                    'stroke': '#F66',
+                    'fill': 'rgba(38, 50, 56, 0.5)',
+                    'object_id': objects.length,
+                    'id': 'canvas-e' + objects.length
+                });
+                // rect redrawn and restored
+                objects.push(obj);
+                break;
+            default:
+
+        }
+    });
+
+    $('.row.cmark input').change(function() {
+        var shape = d3.select('svg .selected');
+        shape.attr('rows', $('#cmark-rows').val());
+        shape.attr('rotation', $('#cmark-rotation').val());
+        shape.attr('oversize', $('#cmark-oversize').val());
+        shape.attr('startClass', $('#cmark-startClass').val());
+        shape.attr('startSubclass', $('#cmark-startSubclass').val());
+        shape.attr('endClass', $('#cmark-endClass').val());
+        shape.attr('endSubclass', $('#cmark-endSubclass').val());
+    });
+
+    $('.row.crect input').change(function() {
+        var shape = d3.select('svg .selected');
+        shape.attr('x', $('#crect-x').val());
+        shape.attr('y', $('#crect-y').val());
+        shape.attr('width', $('#crect-width').val());
+        shape.attr('height', $('#crect-height').val());
+        objects = objects.map(function(obj) {
+            if (obj.id === shape.attr('id')) {
+                return {
+                    type: 'rect',
+                    id: obj.id,
+                    data: [
+                        parseInt(shape.attr('x')),
+                        parseInt(shape.attr('y')),
+                        parseInt(shape.attr('width')),
+                        parseInt(shape.attr('height'))
+                    ]
+                };
+            } else {
+                return obj;
+            }
+        });
+    });
+
+    $('.row.cpolygon input').change(function() {
+        var shape = d3.select('svg .selected');
+        shape.attr('points', $('#cpolygon-points').val());
+    });
 });
 
+var canvas;
 var modebit = 0; // 0: pointer, 1: rect, 2: poly, 3: mark, 4: text
 var objects = [];
+var objects_redo = [];
 
 function initCanvas(w, h) {
     // var x = d3.scaleLinear().domain([0, d3.max(data)]).range([0, width]);
-    var canvas = d3.select('#canvas').attr('width', w).attr('height', h);
+    canvas = d3.select('#canvas').attr('width', w).attr('height', h);
     var gridLine;
     var gridNum = [
         Math.floor(w / 50),
@@ -67,11 +163,12 @@ function initCanvas(w, h) {
                     } else {
                         active_rect.attr('y', active_rect.attr('y0'));
                     }
-                    active_rect.classed('active', false);
                     active_rect.attr('width', rect_w).attr('height', rect_h);
-                    active_rect.attrs({'stroke': '#F66', 'fill': 'rgba(38, 50, 56, 0.5)'});
+                    // rect created and stored
+                    confirmNewShape(active_rect);
                     objects.push({
                         type: 'rect',
+                        id: 'canvas-e' + objects.length,
                         data: [
                             parseInt(active_rect.attr('x')),
                             parseInt(active_rect.attr('y')),
@@ -134,11 +231,12 @@ function initCanvas(w, h) {
             case 2:
                 var active_polygon = canvas.select('polygon.active');
                 if (!active_polygon.empty()) {
-                    active_polygon.classed('active', false);
                     active_polygon.attr('points', active_polygon.attr('points') + ' ' + coords.join(','));
-                    active_polygon.attrs({'stroke': '#F66', 'fill': 'rgba(38, 50, 56, 0.5)'});
+                    // polygon created and stored
+                    confirmNewShape(active_polygon);
                     objects.push({
                         type: 'polygon',
+                        id: 'canvas-e' + objects.length,
                         data: active_polygon.attr('points').split(' ').map(function(p) {
                             return [
                                 parseInt(p.split(',')[0]),
@@ -147,6 +245,87 @@ function initCanvas(w, h) {
                         })
                     });
                 }
+                break;
+            default:
+
+        }
+    });
+}
+
+function confirmNewShape(shape) {
+    shape.classed('active', false);
+    shape.attrs({'stroke': '#F66', 'fill': 'rgba(38, 50, 56, 0.5)'});
+    objects_redo = [];
+    shape.attr('object_id', objects.length);
+    shape.attr('id', 'canvas-e' + objects.length);
+    shape.attr('rows', 0);
+    shape.attr('rotation', 0);
+    shape.attr('oversize', 0);
+    shape.attr('startClass', '');
+    shape.attr('startSubclass', 0);
+    shape.attr('endClass', '');
+    shape.attr('endSubclass', 0);
+    addMarkHandlerToShape(shape);
+    switch (modebit) {
+        case 1:
+            selectRect(shape.attr('object_id'));
+            break;
+        case 2:
+            selectPolygon(shape.attr('object_id'));
+            break;
+        default:
+
+    }
+    modebit = 0;
+}
+
+function selectRect(id) {
+    $('svg .selected').removeClass('selected');
+    $('#canvas-e' + id).addClass('selected');
+    $('#crect-x').val($('#canvas-e' + id).attr('x'));
+    $('#crect-y').val($('#canvas-e' + id).attr('y'));
+    $('#crect-width').val($('#canvas-e' + id).attr('width'));
+    $('#crect-height').val($('#canvas-e' + id).attr('height'));
+    $('.tool-options > .row').hide();
+    $('.tool-options > .row:nth-child(1)').show();
+    Materialize.updateTextFields();
+}
+
+function selectPolygon(id) {
+    $('svg .selected').removeClass('selected');
+    $('#canvas-e' + id).addClass('selected');
+    $('#cpolygon-points').val($('#canvas-e' + id).attr('points'));
+    $('.tool-options > .row').hide();
+    $('.tool-options > .row:nth-child(2)').show();
+    Materialize.updateTextFields();
+}
+
+function addMarkHandlerToShape(e) {
+    e.on('click', function() {
+        switch (modebit) {
+            case 0:
+                switch (objects[$(this).attr('object_id')].type) {
+                    case 'rect':
+                        selectRect(e.attr('object_id'));
+                        break;
+                    case 'polygon':
+                        selectPolygon(e.attr('object_id'));
+                        break;
+                    default:
+
+                }
+                break;
+            case 3:
+                $('svg .selected').removeClass('selected');
+                $(this).addClass('selected');
+                $('#cmark-rows').val($(this).attr('rows'));
+                $('#cmark-rotation').val($(this).attr('rotation'));
+                $('#cmark-oversize').val($(this).attr('oversize'));
+                $('#cmark-startClass').val($(this).attr('startClass'));
+                $('#cmark-startSubclass').val($(this).attr('startSubclass'));
+                $('#cmark-endClass').val($(this).attr('endClass'));
+                $('#cmark-endSubclass').val($(this).attr('endSubclass'));
+                Materialize.updateTextFields();
                 break;
             default:
 

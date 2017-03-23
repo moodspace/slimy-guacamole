@@ -29,6 +29,10 @@ main>.container {
     padding-right: 24px;
 }
 
+svg .selected {
+    stroke-width: 3px;
+}
+
 main {
     padding-left: 300px;
 }
