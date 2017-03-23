@@ -4,7 +4,7 @@ main>.container {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    background-image: url('/images/Olin-Level6.gif')
+    background-image: url('../images/Olin-Level6.gif')
 }
 
 .side-nav>li>.collapsible>li>.collapsible-header {
