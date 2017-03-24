@@ -1,3 +1,7 @@
+var helpText = ['Click to select an element on canvas.', 'Draw a rectangle on canvas. Click to start a new point. Click again to finish.', 'Draw a polygon on canvas. Click to start a new point. Double click to finish.', 'Add interactivity to an area on canvas.', 'Edit floor properties.'];
+var helpTextTimeout;
+var meta_objects = {};
+
 var libraries = [
     {
         id: 1,
@@ -78,17 +82,28 @@ $(document).ready(function() {
             if (!$('svg.selected').empty) {
                 $('.tool-options > .row:nth-child(' + index + ')').show();
             }
+            if (modebit === 3 || modebit === 4) {
+                $('.tool-options > .row:nth-child(' + index + ')').show();
+            }
             $(this).addClass('light-blue');
+            $('.help-text').html('<span class="white-text">' + helpText[index] + '</span>');
+            $('.help-text').fadeIn();
+            helpTextTimeout
+                ? clearInterval(helpTextTimeout)
+                : false;
+            helpTextTimeout = setTimeout(function() {
+                $('.help-text').fadeOut();
+            }, 5000);
         });
     });
 
     $('#viewmode-toggle').change(function() {
-      if (this.checked) {
-        $('svg g').removeClass('hidden');
-      } else {
-        $('svg g').removeClass('hidden');
-        $('svg g').addClass('hidden');
-      }
+        if (this.checked) {
+            $('svg g').removeClass('hidden');
+        } else {
+            $('svg g').removeClass('hidden');
+            $('svg g').addClass('hidden');
+        }
     });
 
     $('#nav-undo').click(function() {
@@ -120,7 +135,6 @@ $(document).ready(function() {
                     'stroke-width': '1',
                     'stroke': '#F66',
                     'fill': 'rgba(38, 50, 56, 0.5)',
-                    'object_id': obj.id.replace('canvas-e-', ''),
                     'id': obj.id
                 });
                 // rect redrawn and restored
@@ -136,7 +150,6 @@ $(document).ready(function() {
                     'stroke-width': '1',
                     'stroke': '#F66',
                     'fill': 'rgba(38, 50, 56, 0.5)',
-                    'object_id': obj.id.replace('canvas-e-', ''),
                     'id': obj.id
                 });
                 // rect redrawn and restored
@@ -205,10 +218,52 @@ $(document).ready(function() {
         var shape = d3.select('svg .selected');
         shape.attr('points', $('#cpolygon-points').val());
     });
+
+    $('#cfloor-btn-set').click(function() {
+        modebit = 4;
+        if (meta_objects.floor_border) {
+            canvas.select('polygon[id="' + meta_objects.floor_border.id + '"]').remove();
+        }
+        meta_objects.floor_border = undefined;
+        $(this).addClass('disabled');
+    });
+
+    $('#btn-output-JSON').click(function() {
+        var floorJson = {};
+        floorJson.floor = {
+            name: $('#cfloor-name').val(),
+            size_x: d3.max(meta_objects.floor_border.data, function(e) {
+                return e[0];
+            }) - d3.min(meta_objects.floor_border.data, function(e) {
+                return e[0];
+            }),
+            size_y: d3.max(meta_objects.floor_border.data, function(e) {
+                return e[1];
+            }) - d3.min(meta_objects.floor_border.data, function(e) {
+                return e[1];
+            }),
+            geojson: JSON.stringify({type: "polygon", coordinates: meta_objects.floor_border.data})
+        };
+
+        var stacksJson = [];
+        objects.forEach(function(obj) {
+            if (obj.type === 'stacks') {
+                obj.data.forEach(function(stack) {
+                    stacksJson.push(stack.meta);
+                });
+            }
+        });
+        $('#box-code-pop').html(JSON.stringify([floorJson, stacksJson], null, '  '));
+        $('.modal').modal();
+        $('#code-popup').modal('open');
+        $('pre code').each(function(i, block) {
+            hljs.highlightBlock(block);
+        });
+    });
 });
 
 var canvas;
-var modebit = 0; // 0: pointer, 1: rect, 2: poly, 3: mark, 4: text
+var modebit = 0; // 0: pointer, 1: rect, 2: poly, 3: mark, 4: layer
 var objects = [];
 var objects_redo = [];
 
@@ -286,6 +341,17 @@ function initCanvas(w, h) {
                     active_polygon.attr('points', active_polygon.attr('points') + ' ' + coords.join(','));
                 }
                 break;
+            case 4:
+                if (!$('#cfloor-btn-set').hasClass('disabled')) {
+                    break;
+                }
+                var active_f_polygon = canvas.select('polygon.active_f');
+                if (active_f_polygon.empty()) {
+                    canvas.append('polygon').classed('active_f', true).attrs({'points': coords.join(','), 'stroke-width': '1', 'stroke': '#F66', 'fill': 'rgba(239, 108, 0, 0.5)'});
+                } else {
+                    active_f_polygon.attr('points', active_f_polygon.attr('points') + ' ' + coords.join(','));
+                }
+                break;
             default:
 
         }
@@ -319,6 +385,12 @@ function initCanvas(w, h) {
                     active_polygon.attr('points', active_polygon.attr('points').replace(/\s+[-\d\.]+,[-\d\.]+$/, '') + ' ' + coords.join(','));
                 }
                 break;
+            case 4:
+                var active_f_polygon = canvas.select('polygon.active_f');
+                if (!active_f_polygon.empty()) {
+                    active_f_polygon.attr('points', active_f_polygon.attr('points').replace(/\s+[-\d\.]+,[-\d\.]+$/, '') + ' ' + coords.join(','));
+                }
+                break;
             default:
 
         }
@@ -348,6 +420,28 @@ function initCanvas(w, h) {
                     });
                     confirmNewShape(active_polygon, rid);
                 }
+                break;
+            case 4:
+                var active_f_polygon = canvas.select('polygon.active_f');
+                if (!active_f_polygon.empty()) {
+                    var newPoints = active_f_polygon.attr('points') + ' ' + coords.join(',');
+                    newPoints = arrayToPoints(prunePoints(pointsToArray(newPoints)));
+                    active_f_polygon.attr('points', newPoints);
+                    // polygon created and stored
+                    var rid = randomId();
+                    meta_objects.floor_border = {
+                        type: 'f_border',
+                        id: 'canvas-e-' + rid,
+                        data: active_f_polygon.attr('points').split(' ').map(function(p) {
+                            return [
+                                parseInt(p.split(',')[0]),
+                                parseInt(p.split(',')[1])
+                            ];
+                        })
+                    };
+                    confirmNewShape(active_f_polygon, rid, true);
+                }
+                $('#cfloor-btn-set').removeClass('disabled');
                 break;
             default:
 
@@ -390,11 +484,15 @@ function prunePoints(points) {
     return ret;
 }
 
-function confirmNewShape(shape, id) {
+function confirmNewShape(shape, id, readonly) {
     shape.classed('active', false);
-    shape.attrs({'stroke': '#F66', 'fill': 'rgba(38, 50, 56, 0.5)'});
+    shape.attrs({
+        'stroke': '#F66',
+        'fill': readonly
+            ? 'transparent'
+            : 'rgba(38, 50, 56, 0.5)'
+    });
     objects_redo = [];
-    shape.attr('object_id', id);
     shape.attr('id', 'canvas-e-' + id);
     shape.attr('rows', 0);
     shape.attr('rotation', 0);
@@ -403,13 +501,15 @@ function confirmNewShape(shape, id) {
     shape.attr('startSubclass', 0);
     shape.attr('endClass', '');
     shape.attr('endSubclass', 0);
-    addMarkHandlerToShape(shape);
+    if (!readonly) {
+        addMarkHandlerToShape(shape);
+    }
     switch (modebit) {
         case 1:
-            selectRect(shape.attr('object_id'));
+            selectRect(shape.attr('id'));
             break;
         case 2:
-            selectPolygon(shape.attr('object_id'));
+            selectPolygon(shape.attr('id'));
             break;
         default:
 
@@ -420,11 +520,11 @@ function confirmNewShape(shape, id) {
 
 function selectRect(id) {
     $('svg .selected').removeClass('selected');
-    $('#canvas-e-' + id).addClass('selected');
-    $('#crect-x').val($('#canvas-e-' + id).attr('x'));
-    $('#crect-y').val($('#canvas-e-' + id).attr('y'));
-    $('#crect-width').val($('#canvas-e-' + id).attr('width'));
-    $('#crect-height').val($('#canvas-e-' + id).attr('height'));
+    $('#' + id).addClass('selected');
+    $('#crect-x').val($('#' + id).attr('x'));
+    $('#crect-y').val($('#' + id).attr('y'));
+    $('#crect-width').val($('#' + id).attr('width'));
+    $('#crect-height').val($('#' + id).attr('height'));
     $('.tool-options > .row').hide();
     $('.tool-options > .row:nth-child(1)').show();
     Materialize.updateTextFields();
@@ -432,8 +532,8 @@ function selectRect(id) {
 
 function selectPolygon(id) {
     $('svg .selected').removeClass('selected');
-    $('#canvas-e-' + id).addClass('selected');
-    $('#cpolygon-points').val($('#canvas-e-' + id).attr('points'));
+    $('#' + id).addClass('selected');
+    $('#cpolygon-points').val($('#' + id).attr('points'));
     $('.tool-options > .row').hide();
     $('.tool-options > .row:nth-child(2)').show();
     Materialize.updateTextFields();
@@ -441,9 +541,9 @@ function selectPolygon(id) {
 
 function showMarkTool(id) {
     $('svg .selected').removeClass('selected');
-    $('#canvas-e-' + id).addClass('selected');
-    $('#cmark-rows').val($('#canvas-e-' + id).attr('rows'));
-    $('#cmark-rotation').val($('#canvas-e-' + id).attr('rotation'));
+    $('#' + id).addClass('selected');
+    $('#cmark-rows').val($('#' + id).attr('rows'));
+    $('#cmark-rotation').val($('#' + id).attr('rotation'));
     $('.tool-options > .row:nth-child(' + modebit + ')').show();
     Materialize.updateTextFields();
 }
@@ -452,19 +552,23 @@ function addMarkHandlerToShape(e) {
     e.on('click', function() {
         switch (modebit) {
             case 0:
-                switch (objects[$(this).attr('object_id')].type) {
-                    case 'rect':
-                        selectRect(e.attr('object_id'));
-                        break;
-                    case 'polygon':
-                        selectPolygon(e.attr('object_id'));
-                        break;
-                    default:
+                objects.forEach(function(obj) {
+                    if (obj.id === e.attr('id')) {
+                        switch (obj.type) {
+                            case 'rect':
+                                selectRect(obj.id);
+                                break;
+                            case 'polygon':
+                                selectPolygon(obj.id);
+                                break;
+                            default:
 
-                }
+                        }
+                    }
+                });
                 break;
             case 3:
-                showMarkTool(e.attr('object_id'));
+                showMarkTool(e.attr('id'));
                 break;
             default:
 

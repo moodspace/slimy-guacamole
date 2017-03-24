@@ -10,6 +10,7 @@
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.1/css/materialize.min.css">
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/atom-one-light.min.css">
 </head>
 
 <body>
@@ -28,7 +29,7 @@
       <li>
         <ul class="collapsible" data-collapsible="accordion">
           <li>
-            <div class="collapsible-header">
+            <div class="collapsible-header waves-effect">
               Libraries<i class="material-icons right">add</i>
             </div>
             <div class="collapsible-body">
@@ -44,7 +45,7 @@
       <li>
         <ul class="collapsible" data-collapsible="accordion">
           <li>
-            <div class="collapsible-header">
+            <div class="collapsible-header waves-effect">
               Floors<i class="material-icons right">add</i>
             </div>
             <div class="collapsible-body">
@@ -71,7 +72,7 @@
             <a class="btn-flat col s3"><i class="material-icons">crop_landscape</i></a>
             <a class="btn-flat col s3"><i class="material-icons">label_outline</i></a>
             <a class="btn-flat col s3"><i class="material-icons">flag</i></a>
-            <a class="btn-flat col s3"><i class="material-icons">text_fields</i></a>
+            <a class="btn-flat col s3"><i class="material-icons">layers</i></a>
           </div>
         </div>
       </li>
@@ -98,6 +99,7 @@
               <label for="crect-height">height</label>
             </div>
           </div>
+          <!-- cpolygon | polygon plotter -->
           <div class="row cpolygon">
             <div class="input-field col s12">
               <input id="cpolygon-points" type="text">
@@ -114,24 +116,21 @@
               <label for="cmark-rotation">rotation</label>
             </div>
           </div>
-          <div class="row ctext">
-            <div class="input-field col s3">
-              <input id="ctext-x" type="text">
-              <label for="ctext-x">x</label>
-            </div>
-            <div class="input-field col s3">
-              <input id="ctext-y" type="text">
-              <label for="ctext-y">y</label>
-            </div>
-            <div class="input-field col s6">
-              <input id="ctext-font-size" type="text">
-              <label for="ctext-font-size">font-size</label>
+          <!-- cfloor | floor configurator -->
+          <div class="row cfloor">
+            <div class="input-field col s12">
+              <label for="cfloor-range-scale">Set map scale</label>
+              <input type="range" id="cfloor-range-scale" min="1" max="1000" />
             </div>
             <div class="input-field col s12">
-              <input id="ctext-text" type="text">
-              <label for="ctext-text">Text</label>
+              <a class="waves-effect waves-light btn" id="cfloor-btn-set">Draw floor border</a>
+            </div>
+            <div class="input-field col s3">
+              <input id="cfloor-name" type="text">
+              <label for="cfloor-name">name</label>
             </div>
           </div>
+          <!-- cstack | stack meta -->
           <div class="row cstack">
             <div class="input-field col s6">
               <input id="cstack-oversize" type="text">
@@ -159,6 +158,8 @@
     </ul>
   </header>
   <main>
+    <div class="card-panel light-blue darken-1 help-text">
+    </div>
     <ul id="dropdown2" class="dropdown-content">
       <li><a href="#!">50%</a></li>
       <li><a href="#!">100%</a></li>
@@ -194,7 +195,7 @@
         <ul class="right">
           <li><a href="sass.html">Upload</a></li>
           <li><a href="badges.html">Save</a></li>
-          <li><a href="badges.html">Test</a></li>
+          <li><a href="javascript:void(0)" id="btn-output-JSON">JSON</a></li>
         </ul>
       </div>
     </nav>
@@ -204,11 +205,19 @@
     </div>
   </main>
 
+  <div id="code-popup" class="modal bottom-sheet">
+    <div class="modal-content">
+      <h4>Output</h4>
+      <pre><code class="json" id="box-code-pop"></code></pre>
+    </div>
+  </div>
+
   <script src="https://d3js.org/d3.v4.min.js"></script>
   <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
   <script src="https://d3js.org/d3-polygon.v1.min.js"></script>
   <script src="js/jquery-3.2.1.min.js"></script>
   <script src="js/materialize.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script>
   <script src="js/script.js"></script>
 </body>
 

@@ -46,3 +46,10 @@ main {
         padding-left: 0;
     }
 }
+
+.card-panel.help-text {
+  display: none;
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+}
